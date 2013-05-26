@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=a.ico
-#AutoIt3Wrapper_Outfile=..\Desktop\GW2_Timer.exe
+#AutoIt3Wrapper_Icon=..\..\..\Downloads\a.ico
+#AutoIt3Wrapper_Outfile=GW2_Timer_0.7.exe
 #AutoIt3Wrapper_UseUpx=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;Written by Dauni.8290
@@ -20,17 +20,18 @@ If Not $connect Then
 	MsgBox(48, "Warning", "You have no Internet Connection!")
 	Exit
 EndIf
-Global $TIMER_VERSION = "0.5"
+Global $TIMER_VERSION = "0.7"
 $serverid = IniRead("TimerConf.ini", "Server", "id", 2201)
 $servername = ""
 #region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("Overlay", 180, 500, -1, -1, $WS_POPUP, BitOR($WS_EX_LAYERED, $WS_EX_TOPMOST, $WS_EX_TOOLWINDOW))
+$Form1 = GUICreate("Overlay", 360, 500, -1, -1, $WS_POPUP, BitOR($WS_EX_LAYERED, $WS_EX_TOPMOST, $WS_EX_TOOLWINDOW))
 GUISetBkColor(0x505050, $Form1)
 _WinAPI_SetLayeredWindowAttributes($Form1, 0x505050, 250)
 #endregion ### END Koda GUI section ###
 Global $option_mini = IniRead("TimerConf.ini", "Options", "minimize", 0)
 Global $option_blackbg = IniRead("TimerConf.ini", "Options", "blackbg", 0)
 Global $option_timer = IniRead("TimerConf.ini", "Options", "timer", 0)
+Global $option_detailpre = IniRead("TimerConf.ini", "Options", "detailpre", 0)
 Global $alllbl[1]
 Global $statlbl[1]
 Global $msgevents[1]
@@ -75,7 +76,7 @@ GUICtrlSetColor(-1, 0xFFFFFF)
 _ArrayAdd($alllbl, $load)
 $online_version = _INetGetSource("http://timer.felix.vc/version")
 If $TIMER_VERSION <> $online_version Then
-	MsgBox(0, "New Version Available", "A new Version is available! Check out the Reddit Post!( http://tinyurl.com/gw2overredd )")
+	MsgBox(0, "New Version Available", "A new Version is available! "&@CRLF&"Your Version: "&$TIMER_VERSION&@CRLF&"Server Version: "&$online_version&@CRLF&@CRLF&"Check out the Reddit Post!( http://tinyurl.com/gw2overredd )")
 EndIf
 
 For $i = 1 To UBound($alllbl) - 1
@@ -92,7 +93,7 @@ $serverMenuEU = TrayCreateMenu("EU", $serverMenu)
 $serverMenuNA = TrayCreateMenu("NA", $serverMenu)
 $server_src = _INetGetSource("https://api.guildwars2.com/v1/world_names.json")
 $serverList = StringSplit($server_src, @CRLF)
-Global $server_count = UBound($serverList) - 1
+Global $server_count = UBound($serverList)
 Global $trayItems[$server_count]
 For $i = 1 To $server_count - 1
 	$line = $serverList[$i]
@@ -205,7 +206,15 @@ Func _getinfo($str)
 				If ($a1_5[0] == "Active") Then
 					_ArrayAdd($status, "Active")
 				Else
-					_ArrayAdd($status, "Pre")
+					If ($option_detailpre == 0) Then
+						_ArrayAdd($status, "Pre")
+					Else
+						If ($a1_1[0] == "Active" Or $a1_3[0] == "Active" Or $a1_4[0] == "Active") Then
+							_ArrayAdd($status, "Destroy the 3 Portals")
+						ElseIf ($a1_2[0] == "Active") Then
+							_ArrayAdd($status, "Destroy the Portals in the Swamp")
+						EndIf
+					EndIf
 				EndIf
 			EndIf
 		EndIf
@@ -230,13 +239,21 @@ Func _getinfo($str)
 					ElseIf ($a2_1[0] == "Active") Then
 						_ArrayAdd($status, Sec2Time(300 - (Round(TimerDiff($fireeletimer) / 1000))))
 					Else
-						_ArrayAdd($status, "Pre")
+						If ($option_detailpre == 0) Then
+							_ArrayAdd($status, "Pre")
+						Else
+							_ArrayAdd($status, "Escort the Golem")
+						EndIf
 					EndIf
 				Else
 					If ($a2_2[0] == "Active") Then
 						_ArrayAdd($status, "Active")
 					Else
-						_ArrayAdd($status, "Pre")
+						If ($option_detailpre == 0) Then
+							_ArrayAdd($status, "Pre")
+						Else
+							_ArrayAdd($status, "Escort the Golem")
+						EndIf
 					EndIf
 				EndIf
 			EndIf
@@ -254,7 +271,19 @@ Func _getinfo($str)
 				If ($a3_5[0] == "Active") Then
 					_ArrayAdd($status, "Active")
 				Else
-					_ArrayAdd($status, "Pre")
+					If($option_detailpre==0)Then
+						_ArrayAdd($status, "Pre")
+					Else
+						If ($a3_1[0] == "Active") Then
+							_ArrayAdd($status,"Escort Gamarien")
+						ElseIf ($a3_2[0] == "Active") Then
+							_ArrayAdd($status,"Kill the giant blighted grub")
+						ElseIf ($a3_3[0] == "Active") Then
+							_ArrayAdd($status,"Destroy the blighted growth")
+						ElseIf ($a3_4[0] == "Active") Then
+							_ArrayAdd($status,"Destroy the avatars of blight")
+						EndIf
+					EndIf
 				EndIf
 			EndIf
 		EndIf
@@ -510,11 +539,11 @@ Func _getinfo($str)
 		GUICtrlSetColor(-1, 0xFFFFFF)
 
 		If ($status[$i] == "Active") Then
-			$l2 = GUICtrlCreateLabel("Active", 141, 44 + (($i - 1) * 16), 122, 24, -1, $GUI_WS_EX_PARENTDRAG)
+			$l2 = GUICtrlCreateLabel("Active", 141, 44 + (($i - 1) * 16), 250, 24, -1, $GUI_WS_EX_PARENTDRAG)
 			GUICtrlSetFont(-1, 8, 800, 0, "MS Sans Serif")
 			GUICtrlSetColor(-1, 0x008000)
 		Else
-			$l2 = GUICtrlCreateLabel($status[$i], 141, 44 + (($i - 1) * 16), 122, 24, -1, $GUI_WS_EX_PARENTDRAG)
+			$l2 = GUICtrlCreateLabel($status[$i], 141, 44 + (($i - 1) * 16), 250, 24, -1, $GUI_WS_EX_PARENTDRAG)
 			GUICtrlSetColor(-1, 0xFFFFFF)
 		EndIf
 		_ArrayAdd($alllbl, $cb)
@@ -555,15 +584,15 @@ Func OptionEvent()
 	$Label1 = GUICtrlCreateLabel("Minimize if Guild Wars 2 is inactive", 40, 17, 166, 17)
 	$option_timer_box = GUICtrlCreateCheckbox("", 16, 61, 17, 17)
 
-	$Label823 = GUICtrlCreateLabel("Display Timers(beta)", 40, 63, 170, 17)
+	$Label823 = GUICtrlCreateLabel("Display Timers(beta)", 40, 57, 170, 17)
 	If ($option_timer == 1) Then
 		GUICtrlSetState($option_timer_box, $GUI_CHECKED)
 	EndIf
-	;$blackbg = GUICtrlCreateCheckbox("", 15, 61, 17, 17)
-	;$Label23 = GUICtrlCreateLabel("10% Trans. Background", 39, 63, 170, 17)
-	;If ($option_blackbg == 1) Then
-	;	GUICtrlSetState($blackbg, $GUI_CHECKED)
-	;EndIf
+	$detailpre_box = GUICtrlCreateCheckbox("", 16, 61, 17, 17)
+	$Label23 = GUICtrlCreateLabel("Detailed Pre Information", 40, 97, 170, 17)
+	If ($option_detailpre == 1) Then
+		GUICtrlSetState($detailpre_box, $GUI_CHECKED)
+	EndIf
 	$Button1 = GUICtrlCreateButton("Save", 16, 128, 193, 33)
 	$Group1 = GUICtrlCreateGroup("Boss selection", 216, 16, 569, 145)
 	$option_boss_behemoth_box = GUICtrlCreateCheckbox("", 224, 40, 13, 17)
@@ -837,6 +866,13 @@ Func OptionEvent()
 					IniWrite("TimerConf.ini", "Options", "timer", 1)
 					Global $option_timer = 1
 				EndIf
+				If (GUICtrlRead($detailpre_box) == $GUI_UNCHECKED) Then
+					IniWrite("TimerConf.ini", "Options", "detailpre", 0)
+					Global $option_detailpre = 0
+				Else
+					IniWrite("TimerConf.ini", "Options", "detailpre", 1)
+					Global $option_detailpre = 1
+				EndIf
 
 				GUIDelete($options)
 				$msg = 0
@@ -895,9 +931,9 @@ Func updatetimer()
 		If ($name[$i] == "Fire Elemental" And $fireeletimer <> "") Then
 			_ArrayDelete($status, $i)
 			If (300 - (Round(TimerDiff($fireeletimer) / 1000)) <= 1) Then
-				$l2 = GUICtrlCreateLabel("Waiting", 141, 44 + (($i - 1) * 16), 122, 12, -1, $GUI_WS_EX_PARENTDRAG)
+				$l2 = GUICtrlCreateLabel("Waiting", 141, 44 + (($i - 1) * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
 			Else
-				$l2 = GUICtrlCreateLabel(Sec2Time(300 - (Round(TimerDiff($fireeletimer) / 1000))), 141, 44 + (($i - 1) * 16), 122, 12, -1, $GUI_WS_EX_PARENTDRAG)
+				$l2 = GUICtrlCreateLabel(Sec2Time(300 - (Round(TimerDiff($fireeletimer) / 1000))), 141, 44 + (($i - 1) * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
 			EndIf
 			GUICtrlSetColor(-1, 0xFFFFFF)
 			_ArrayAdd($status, "Pre")

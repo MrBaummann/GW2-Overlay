@@ -12,6 +12,7 @@
 #include <GUIConstantsEx.au3>
 #include <StaticConstants.au3>
 #include <WindowsConstants.au3>
+#include <JSMN.au3>
 Opt("TrayAutoPause", 0)
 Opt("TrayMenuMode", 1)
 Global $option_mini = 0
@@ -22,11 +23,11 @@ If Not $connect Then
 EndIf
 Global $TIMER_VERSION = "0.3"
 Global $serverid = IniRead("WvWWatcherConf.ini", "Match", "id", "1-1")
-Global $map = IniRead("WvWWatcherConf.ini", "Map", "id", "0")
+Global $map = IniRead("WvWWatcherConf.ini", "Match", "map", "0")
 Global $servername = ""
 Global $matchname = ""
 #region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("Overlay", 180, 500, -1, -1, $WS_POPUP, BitOR($WS_EX_LAYERED, $WS_EX_TOPMOST, $WS_EX_TOOLWINDOW))
+$Form1 = GUICreate("Overlay", 327, 107, -1, -1, $WS_POPUP, BitOR($WS_EX_LAYERED, $WS_EX_TOPMOST, $WS_EX_TOOLWINDOW))
 GUISetBkColor(0x505050, $Form1)
 _WinAPI_SetLayeredWindowAttributes($Form1, 0x505050, 250)
 $pos = WinGetPos($Form1)
@@ -61,6 +62,15 @@ Global $matches_count = UBound($matchesList)
 Global $matchlist[$matches_count][4]
 Global $trayItems[$matches_count]
 Global $mapItems[$matches_count][4]
+Global $last_mapItems[80][3]
+;LBL
+Global $l1
+Global $l2
+Global $l3
+Global $l4
+
+Global $lastchange
+;LBL
 For $i = 1 To $matches_count - 1
 	$line = $matchesList[$i]
 	$match = _StringBetween($line, '"wvw_match_id":"', '"')
@@ -84,21 +94,21 @@ For $i = 1 To $matches_count - 1
 	Else
 		$trayItems[$i - 1] = TrayCreateMenu($ctrlname, $serverMenuEU)
 	EndIf
-	$mapItems[$i - 1][0] = TrayCreateItem($red_name&" Home ("&$match&"|0)",$trayItems[$i - 1],$match&"|"&0,1)
-	$mapItems[$i - 1][1] = TrayCreateItem($blue_name&" Home ("&$match&"|1)",$trayItems[$i - 1],$match&"|"&1,1)
-	$mapItems[$i - 1][2] = TrayCreateItem($green_name&" Home ("&$match&"|2)",$trayItems[$i - 1],$match&"|"&2,1)
-	$mapItems[$i - 1][3] = TrayCreateItem("Eternal Battlegrounds ("&$match&"|3)",$trayItems[$i - 1],$match&"|"&3,1)
+	$mapItems[$i - 1][0] = TrayCreateItem($red_name & " Home (" & $match & "|0)", $trayItems[$i - 1], $match & "|" & 0, 1)
+	$mapItems[$i - 1][1] = TrayCreateItem($blue_name & " Home (" & $match & "|1)", $trayItems[$i - 1], $match & "|" & 1, 1)
+	$mapItems[$i - 1][2] = TrayCreateItem($green_name & " Home (" & $match & "|2)", $trayItems[$i - 1], $match & "|" & 2, 1)
+	$mapItems[$i - 1][3] = TrayCreateItem("Eternal Battlegrounds (" & $match & "|3)", $trayItems[$i - 1], $match & "|" & 3, 1)
 	If ($match == $serverid) Then
 		$matchname = StringFormat("%s vs %s vs %s (%s)", $red_name, $blue_name, $green_name, $match)
-		If($map==0) Then
-			$map_name = "Red("&$red_name&") Homelands"
-		ElseIf($map==1) Then
-			$map_name = "Blue("&$blue_name&") Homelands"
-		ElseIf($map==2) Then
-			$map_name = "Green("&$green_name&") Homelands"
+		If ($map == 0) Then
+			$map_name = "Red(" & $red_name & ") Homelands"
+		ElseIf ($map == 1) Then
+			$map_name = "Blue(" & $blue_name & ") Homelands"
+		ElseIf ($map == 2) Then
+			$map_name = "Green(" & $green_name & ") Homelands"
 		Else
 			$map_name = "Eternal Battlegrounds"
-		Endif
+		EndIf
 		TrayItemSetState(-1, 1)
 	EndIf
 Next
@@ -107,7 +117,6 @@ $mapItem = TrayCreateItem("Your Map: " & $map_name)
 $options = TrayCreateItem("Options")
 $about = TrayCreateItem("About")
 $exit = TrayCreateItem("Exit")
-
 $timer = TimerInit()
 _getinfo(_INetGetSource("https://api.guildwars2.com/v1/wvw/match_details.json?match_id=" & $serverid))
 While 1
@@ -136,7 +145,7 @@ While 1
 	EndSwitch
 	Local $state = WinGetState("[CLASS:ArenaNet_Dx_Window_Class]", "")
 	Local $fstate = WinGetState($Form1)
-	If $option_mini == 1 and Not BitAND($fstate, 8) Then
+	If $option_mini == 1 And Not BitAND($fstate, 8) Then
 		If BitAND($state, 8) Then
 			GUISetState(@SW_SHOWNOACTIVATE, $Form1)
 		Else
@@ -146,7 +155,7 @@ While 1
 	If TimerDiff($timer) > 10000 Then
 		Local $fstate = WinGetState($Form1)
 		If $fstate <> 5 And $fstate <> 13 Then
-			MsgBox(0,"",$map&"-"&$serverid)
+			_getinfo(_INetGetSource("https://api.guildwars2.com/v1/wvw/match_details.json?match_id=" & $serverid))
 		EndIf
 		$timer = TimerInit()
 	EndIf
@@ -158,11 +167,76 @@ While 1
 WEnd
 
 Func _getinfo($str)
-		$l1 = GUICtrlCreateLabel("test", 15, 44 + (16), 122, 12, -1, $GUI_WS_EX_PARENTDRAG)
-		GUICtrlSetColor(-1, 0xFFFFFF)
-		MsgBox(0,"",$map&"-"&$serverid)
-EndFunc   ;==>_getinfo
+	$test = Jsmn_Decode($str)
+	Local $maps = Jsmn_ObjGet($test, "maps")
+	If ($map == 1 Or $map == 2 Or $map == 0) Then
+		If ($map == 1) Then
+			$l_map = 2
+		ElseIf ($map == 2) Then
+			$l_map = 1
+		ElseIf ($map == 0) Then
+			$l_map = 0
+		Else
+			$l_map = $map
+		EndIf
+		Local $mapobject = $maps[$l_map]
+	EndIf
+	Local $objects = Jsmn_ObjGet($mapobject, "objectives")
+	Global $map_objects[80][3]
+	For $i = 0 To UBound($objects) - 1
+		$obj_id = Jsmn_ObjGet($objects[$i], "id")
+		$obj_owner = Jsmn_ObjGet($objects[$i], "owner")
+		$obj_guild = Jsmn_ObjGet($objects[$i], "owner_guild")
+		If (Not $obj_guild) Then
+			$obj_guild = ""
+		EndIf
+		$map_objects[$obj_id][0] = $obj_owner
+		$map_objects[$obj_id][1] = $obj_guild
+	Next
+	If $last_mapItems[$obj_id][0] <> "" Then
+		For $j = 0 To UBound($map_objects) - 1
+			If ($map_objects[$j][0] <> "") Then
+				If ($map_objects[$j][0] <> $last_mapItems[$j][0]) Then
+					If ($l3 <> "") Then
+						$l4 = GUICtrlCreateLabel(GUICtrlRead($l3), 15, 44 + (3 * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+					EndIf
+					If ($l2 <> "") Then
+						$l3 = GUICtrlCreateLabel(GUICtrlRead($l2), 15, 44 + (2 * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+					EndIf
+					If ($l1 <> "") Then
+						$l2 = GUICtrlCreateLabel(GUICtrlRead($l1), 15, 44 + (1 * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+					EndIf
 
+
+
+					$l1_1 = GUICtrlCreateLabel(_GetName($j), 15, 44 + (0 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					GUICtrlSetColor(-1, 0xFFFFFF)
+
+					$l1_2 = GUICtrlCreateLabel(" changed from ", 31, 44 + (0 * 16), 60, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					GUICtrlSetColor(-1, 0xFFFFFF)
+
+					$l1_3 = GUICtrlCreateLabel($last_mapItems[$j][0], 102, 44 + (0 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					GUICtrlSetColor(-1, 0xFFFFFF)
+
+					$l1_4 = GUICtrlCreateLabel(" to ", 133, 44 + (0 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					GUICtrlSetColor(-1, 0xFFFFFF)
+
+					$l1_5 = GUICtrlCreateLabel($map_objects[$j][0], 144, 44 + (0 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					GUICtrlSetColor(-1, 0xFFFFFF)
+				EndIf
+			EndIf
+		Next
+	EndIf
+	$last_mapItems = $map_objects
+EndFunc   ;==>_getinfo
+Func _GetName($id)
+	Local $names[60]
+	$names[25] = "Redbriar"
+	Return $id
+EndFunc   ;==>_GetName
 Func _GetNetworkConnect()
 	Local Const $NETWORK_ALIVE_LAN = 0x1 ;net card connection
 	Local Const $NETWORK_ALIVE_WAN = 0x2 ;RAS (internet) connection
@@ -194,7 +268,7 @@ EndFunc   ;==>MoveEvent
 Func SelectServer($controlID)
 	Local $ctrlText = TrayItemGetText($controlID)
 	Local $matchid_con = _StringBetween($ctrlText, "(", ")")
-	Local $matchid_a = StringSplit($matchid_con[0],"|",2)
+	Local $matchid_a = StringSplit($matchid_con[0], "|", 2)
 	$matchid = $matchid_a[0]
 	$map_s = $matchid_a[1]
 	For $i = 1 To $matches_count - 1
@@ -208,34 +282,39 @@ Func SelectServer($controlID)
 	Next
 
 	For $i = 1 To UBound($matchlist) - 1
-		If($matchlist[$i][0]==$matchid) Then
-			TrayItemSetText($matchitem, "Your Match: " & $matchlist[$i][1]&" vs "&$matchlist[$i][2]&" vs "&$matchlist[$i][3])
+		If ($matchlist[$i][0] == $matchid) Then
+			TrayItemSetText($matchItem, "Your Match: " & $matchlist[$i][1] & " vs " & $matchlist[$i][2] & " vs " & $matchlist[$i][3])
 			ExitLoop
-		Endif
+		EndIf
 	Next
-	If($map_s==0) Then
-		$map_name = "Red("&$matchlist[$i][1]&") Homelands"
-	ElseIf($map_s==1) Then
-		$map_name = "Blue("&$matchlist[$i][2]&") Homelands"
-	ElseIf($map_s==2) Then
-		$map_name = "Green("&$matchlist[$i][3]&") Homelands"
+	If ($map_s == 0) Then
+		$map_name = "Red(" & $matchlist[$i][1] & ") Homelands"
+		$map = 0
+	ElseIf ($map_s == 1) Then
+		$map_name = "Blue(" & $matchlist[$i][2] & ") Homelands"
+		$map = 1
+	ElseIf ($map_s == 2) Then
+		$map_name = "Green(" & $matchlist[$i][3] & ") Homelands"
+		$map = 2
 	Else
 		$map_name = "Eternal Battlegrounds"
+		$map = 3
 	EndIf
 
 	TrayItemSetState($controlID, 1)
 	TrayItemSetState(TrayItemGetHandle($controlID), 1)
 	TrayItemSetText($mapItem, "Your Map: " & $map_name)
 	IniWrite("WvWWatcherConf.ini", "Match", "id", $matchid)
-	IniWrite("WvWWatcherConf.ini", "Match", "map", $map_s)
+	IniWrite("WvWWatcherConf.ini", "Match", "map", $map)
 	_getinfo(_INetGetSource("https://api.guildwars2.com/v1/wvw/match_details.json?match_id=" & $serverid))
 EndFunc   ;==>SelectServer
 Func DoNothing()
 
-EndFunc
+EndFunc   ;==>DoNothing
 Func Sec2Time($nr_sec)
-   $sec2time_hour = Int($nr_sec / 3600)
-   $sec2time_min = Int(($nr_sec - $sec2time_hour * 3600) / 60)
-   $sec2time_sec = $nr_sec - $sec2time_hour * 3600 - $sec2time_min * 60
-   Return StringFormat('%02d:%02d', $sec2time_min, $sec2time_sec)
+	$sec2time_hour = Int($nr_sec / 3600)
+	$sec2time_min = Int(($nr_sec - $sec2time_hour * 3600) / 60)
+	$sec2time_sec = $nr_sec - $sec2time_hour * 3600 - $sec2time_min * 60
+	Return StringFormat('%02d:%02d', $sec2time_min, $sec2time_sec)
 EndFunc   ;==>Sec2Time
+
