@@ -64,10 +64,10 @@ Global $trayItems[$matches_count]
 Global $mapItems[$matches_count][4]
 Global $last_mapItems[80][3]
 ;LBL
-Global $l1
-Global $l2
-Global $l3
-Global $l4
+Global $l1_1, $l1_2, $l1_3, $l1_4, $l1_5, $l1_6
+Global $l2_1, $l2_2, $l2_3, $l2_4, $l2_5, $l2_6
+Global $l3_1, $l3_2, $l3_3, $l3_4, $l3_5, $l3_6
+Global $l4_1, $l4_2, $l4_3, $l4_4, $l4_5, $l4_6
 
 Global $lastchange
 ;LBL
@@ -118,6 +118,9 @@ $options = TrayCreateItem("Options")
 $about = TrayCreateItem("About")
 $exit = TrayCreateItem("Exit")
 $timer = TimerInit()
+
+
+
 _getinfo(_INetGetSource("https://api.guildwars2.com/v1/wvw/match_details.json?match_id=" & $serverid))
 While 1
 	Local $msg = TrayGetMsg()
@@ -197,35 +200,112 @@ Func _getinfo($str)
 		For $j = 0 To UBound($map_objects) - 1
 			If ($map_objects[$j][0] <> "") Then
 				If ($map_objects[$j][0] <> $last_mapItems[$j][0]) Then
-					If ($l3 <> "") Then
-						$l4 = GUICtrlCreateLabel(GUICtrlRead($l3), 15, 44 + (3 * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
+					If ($l3_1 <> "") Then
+						$l4_1 = GUICtrlCreateLabel(GUICtrlRead($l3_1), 0, 44 + (3 * 16), 70, 30, -1, $GUI_WS_EX_PARENTDRAG)
 						GUICtrlSetColor(-1, 0xFFFFFF)
-					EndIf
-					If ($l2 <> "") Then
-						$l3 = GUICtrlCreateLabel(GUICtrlRead($l2), 15, 44 + (2 * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetFont(-1, 8, 800, 0, "MS Sans Serif")
+						$l4_2 = GUICtrlCreateLabel(GUICtrlRead($l3_2), 32, 44 + (3 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
 						GUICtrlSetColor(-1, 0xFFFFFF)
-					EndIf
-					If ($l1 <> "") Then
-						$l2 = GUICtrlCreateLabel(GUICtrlRead($l1), 15, 44 + (1 * 16), 250, 12, -1, $GUI_WS_EX_PARENTDRAG)
+						$l4_3 = GUICtrlCreateLabel(GUICtrlRead($l3_3), 105, 44 + (3 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
 						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l4_4 = GUICtrlCreateLabel(GUICtrlRead($l3_4), 180, 44 + (3 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						If (GUICtrlRead($l3_4) == "Red") Then
+							GUICtrlSetColor(-1, 0xFE2E2E)
+						ElseIf (GUICtrlRead($l3_4) == "Blue") Then
+							GUICtrlSetColor(-1, 0x0000FF)
+						Else
+							GUICtrlSetColor(-1, 0x31B404)
+						EndIf
+						$l4_5 = GUICtrlCreateLabel(GUICtrlRead($l3_5), 215, 44 + (3 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l4_6 = GUICtrlCreateLabel(GUICtrlRead($l3_6), 234, 44 + (3 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						If (GUICtrlRead($l3_6) == "Red") Then
+							GUICtrlSetColor(-1, 0xFE2E2E)
+						ElseIf (GUICtrlRead($l3_6) == "Blue") Then
+							GUICtrlSetColor(-1, 0x0000FF)
+						Else
+							GUICtrlSetColor(-1, 0x31B404)
+						EndIf
 					EndIf
-
-
-
-					$l1_1 = GUICtrlCreateLabel(_GetName($j), 15, 44 + (0 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					If ($l2_1 <> "") Then
+						$l3_1 = GUICtrlCreateLabel(GUICtrlRead($l2_1), 0, 44 + (2 * 16), 70, 30, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						GUICtrlSetFont(-1, 8, 800, 0, "MS Sans Serif")
+						$l3_2 = GUICtrlCreateLabel(GUICtrlRead($l2_2), 32, 44 + (2 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l3_3 = GUICtrlCreateLabel(GUICtrlRead($l2_3), 105, 44 + (2 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l3_4 = GUICtrlCreateLabel(GUICtrlRead($l2_4), 180, 44 + (2 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						If (GUICtrlRead($l2_4) == "Red") Then
+							GUICtrlSetColor(-1, 0xFE2E2E)
+						ElseIf (GUICtrlRead($l2_4) == "Blue") Then
+							GUICtrlSetColor(-1, 0x0000FF)
+						Else
+							GUICtrlSetColor(-1, 0x31B404)
+						EndIf
+						$l3_5 = GUICtrlCreateLabel(GUICtrlRead($l2_5), 215, 44 + (2 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l3_6 = GUICtrlCreateLabel(GUICtrlRead($l2_6), 234, 44 + (2 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						If (GUICtrlRead($l2_6) == "Red") Then
+							GUICtrlSetColor(-1, 0xFE2E2E)
+						ElseIf (GUICtrlRead($l2_6) == "Blue") Then
+							GUICtrlSetColor(-1, 0x0000FF)
+						Else
+							GUICtrlSetColor(-1, 0x31B404)
+						EndIf
+					EndIf
+					If ($l1_1 <> "") Then
+						$l2_1 = GUICtrlCreateLabel(GUICtrlRead($l1_1), 0, 44 + (1 * 16), 70, 30, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						GUICtrlSetFont(-1, 8, 800, 0, "MS Sans Serif")
+						$l2_2 = GUICtrlCreateLabel(GUICtrlRead($l1_2), 32, 44 + (1 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l2_3 = GUICtrlCreateLabel(GUICtrlRead($l1_3), 105, 44 + (1 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l2_4 = GUICtrlCreateLabel(GUICtrlRead($l1_4), 180, 44 + (1 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						If (GUICtrlRead($l2_4) == "Red") Then
+							GUICtrlSetColor(-1, 0xFE2E2E)
+						ElseIf (GUICtrlRead($l2_4) == "Blue") Then
+							GUICtrlSetColor(-1, 0x0000FF)
+						Else
+							GUICtrlSetColor(-1, 0x31B404)
+						EndIf
+						$l2_5 = GUICtrlCreateLabel(GUICtrlRead($l1_5), 215, 44 + (1 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						GUICtrlSetColor(-1, 0xFFFFFF)
+						$l2_6 = GUICtrlCreateLabel(GUICtrlRead($l1_6), 234, 44 + (1 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+						If (GUICtrlRead($l2_6) == "Red") Then
+							GUICtrlSetColor(-1, 0xFE2E2E)
+						ElseIf (GUICtrlRead($l2_6) == "Blue") Then
+							GUICtrlSetColor(-1, 0x0000FF)
+						Else
+							GUICtrlSetColor(-1, 0x31B404)
+						EndIf
+					EndIf
+					$l1_1 = GUICtrlCreateLabel(_DateTimeFormat(_NowCalc(), 4), 0, 44 + (0 * 16), 70, 30, -1, $GUI_WS_EX_PARENTDRAG)
 					GUICtrlSetColor(-1, 0xFFFFFF)
-
-					$l1_2 = GUICtrlCreateLabel(" changed from ", 31, 44 + (0 * 16), 60, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					GUICtrlSetFont(-1, 8, 800, 0, "MS Sans Serif")
+					$l1_2 = GUICtrlCreateLabel(_GetName($j), 32, 44 + (0 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
 					GUICtrlSetColor(-1, 0xFFFFFF)
-
-					$l1_3 = GUICtrlCreateLabel($last_mapItems[$j][0], 102, 44 + (0 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					$l1_3 = GUICtrlCreateLabel(" changed from ", 105, 44 + (0 * 16), 70, 15, -1, $GUI_WS_EX_PARENTDRAG)
 					GUICtrlSetColor(-1, 0xFFFFFF)
-
-					$l1_4 = GUICtrlCreateLabel(" to ", 133, 44 + (0 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					$l1_4 = GUICtrlCreateLabel($last_mapItems[$j][0], 180, 44 + (0 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					If ($last_mapItems[$j][0] == "Red") Then
+						GUICtrlSetColor(-1, 0xFE2E2E)
+					ElseIf ($last_mapItems[$j][0] == "Blue") Then
+						GUICtrlSetColor(-1, 0x0000FF)
+					Else
+						GUICtrlSetColor(-1, 0x31B404)
+					EndIf
+					$l1_5 = GUICtrlCreateLabel(" to ", 215, 44 + (0 * 16), 15, 15, -1, $GUI_WS_EX_PARENTDRAG)
 					GUICtrlSetColor(-1, 0xFFFFFF)
-
-					$l1_5 = GUICtrlCreateLabel($map_objects[$j][0], 144, 44 + (0 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
-					GUICtrlSetColor(-1, 0xFFFFFF)
+					$l1_6 = GUICtrlCreateLabel($map_objects[$j][0], 234, 44 + (0 * 16), 30, 15, -1, $GUI_WS_EX_PARENTDRAG)
+					If ($map_objects[$j][0] == "Red") Then
+						GUICtrlSetColor(-1, 0xFE2E2E)
+					ElseIf ($map_objects[$j][0] == "Blue") Then
+						GUICtrlSetColor(-1, 0x0000FF)
+					Else
+						GUICtrlSetColor(-1, 0x31B404)
+					EndIf
 				EndIf
 			EndIf
 		Next
@@ -235,7 +315,7 @@ EndFunc   ;==>_getinfo
 Func _GetName($id)
 	Local $names[60]
 	$names[25] = "Redbriar"
-	Return $id
+	Return "No Name given"
 EndFunc   ;==>_GetName
 Func _GetNetworkConnect()
 	Local Const $NETWORK_ALIVE_LAN = 0x1 ;net card connection
