@@ -13,9 +13,13 @@
 #include <StaticConstants.au3>
 #include <WindowsConstants.au3>
 #include <JSMN.au3>
+#include <GDIPlus.au3>
 Opt("TrayAutoPause", 0)
 Opt("TrayMenuMode", 1)
 Global $option_mini = 0
+Global $map, $hImage, $hGraphic, $hImage
+Global Const $SC_DRAGMOVE = 0xF012
+
 $connect = _GetNetworkConnect()
 If Not $connect Then
 	MsgBox(48, "Warning", "You have no Internet Connection!")
@@ -35,6 +39,43 @@ $x = IniRead("WvWWatcherConf.ini", "Position", "x", $pos[0])
 $y = IniRead("WvWWatcherConf.ini", "Position", "y", $pos[1])
 WinMove($Form1, "", $x, $y, Default, Default)
 GUISetState(@SW_SHOW, $Form1)
+; Create GUI
+$map_gui = GUICreate("", 500, 500, -1, -1, $WS_POPUP, $WS_EX_LAYERED + $WS_EX_TOPMOST)
+_GuiCreateLabel($map_gui,"Kodash[DE] vs Seafarer's Rest vs Desolation",120,10,400,20, 0xFFFFFF)
+GUISetBkColor(0x01, $map_gui)
+GUISetState()
+_WinAPI_SetLayeredWindowAttributes($map_gui, 0x01, 0xFF, 3)
+
+; Load PNG image
+_GDIPlus_StartUp()
+$hImage   = _GDIPlus_ImageLoadFromFile(@ScriptDir& "\images\eb_map.png")
+$hGraphic = _GDIPlus_GraphicsCreateFromHWND($map_gui)
+_GDIPlus_GraphicsDrawImage($hGraphic, $hImage, 0, 0)
+
+$speldan_icon = writepng(@ScriptDir& "\images\icons\camp_red.png",128,108,$map_gui)
+$mendon_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",200,96,$map_gui)
+$veloka_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",328,92,$map_gui)
+$overlook_icon = writepng(@ScriptDir& "\images\icons\keep_red.png",278,130,$map_gui)
+$anza_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",192,190,$map_gui)
+$ogrewatch_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",316,166,$map_gui)
+$pangloss_icon = writepng(@ScriptDir& "\images\icons\camp_red.png",368,146,$map_gui)
+$rogue_icon = writepng(@ScriptDir& "\images\icons\camp_red.png",88,248,$map_gui)
+$wildcreek_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",150,276,$map_gui)
+$stonemist_icon = writepng(@ScriptDir& "\images\icons\castle_red.png",254,274,$map_gui)
+$durios_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",350,262,$map_gui)
+$umber_icon = writepng(@ScriptDir& "\images\icons\camp_red.png",412,250,$map_gui)
+$bravost_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",446,310,$map_gui)
+$aldon_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",56,310,$map_gui)
+$lowlands_icon = writepng(@ScriptDir& "\images\icons\keep_red.png",98,360,$map_gui)
+$klovan_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",188,354,$map_gui)
+$golanta_icon = writepng(@ScriptDir& "\images\icons\camp_red.png",186,416,$map_gui)
+$jerrifer_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",128,410,$map_gui)
+$quentin_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",286,380,$map_gui)
+$danelon_icon = writepng(@ScriptDir& "\images\icons\camp_red.png",320,438,$map_gui)
+$langor_icon = writepng(@ScriptDir& "\images\icons\tower_red.png",394,424,$map_gui)
+$valley_icon = writepng(@ScriptDir& "\images\icons\keep_red.png",394,360,$map_gui)
+
+GUIRegisterMsg($WM_PAINT, "MY_WM_PAINT")
 $online_version = _INetGetSource("http://timer.felix.vc/wvw/version")
 If $TIMER_VERSION <> $online_version Then
 	MsgBox(0, "New Version Available", "A new Version is available! "&@CRLF&"Your Version: "&$TIMER_VERSION&@CRLF&"Server Version: "&$online_version&@CRLF&@CRLF&"Check out the Reddit Post!( http://tinyurl.com/gw2overwvwredd )")
@@ -519,3 +560,28 @@ Func ShowWin()
 	WinMove($Form1, "", $x, $y, Default, Default)
 	GUISetState(@SW_RESTORE, $Form1)
 EndFunc   ;==>ShowWin
+
+Func writepng($img,$top,$left,$hGUI)
+; Load PNG image
+$hImage   = _GDIPlus_ImageLoadFromFile($img)
+
+; Draw PNG image
+$hGraphic = _GDIPlus_GraphicsCreateFromHWND($hGUI)
+_GDIPlus_GraphicsDrawImage($hGraphic, $hImage, $top, $left)
+EndFunc   ;==>writepng
+; Draw PNG image
+Func MY_WM_PAINT($hWnd, $msg, $wParam, $lParam)
+    #forceref $hWnd, $Msg, $wParam, $lParam
+    _WinAPI_RedrawWindow($map_gui, 0, 0, $RDW_UPDATENOW)
+    _GDIPlus_GraphicsDrawImage($hGraphic, $hImage, 0, 0)
+    _WinAPI_RedrawWindow($map_gui, 0, 0, $RDW_VALIDATE)
+    Return $GUI_RUNDEFMSG
+EndFunc   ;==>MY_WM_PAINT
+Func _GuiCreateLabel ($iHwnd, $iText, $iX, $iY, $iW, $iH, $color)
+    $iGui = GUICreate ("",$iW, $iH, $iX, $iY,BitOR($WS_POPUP, $WS_VISIBLE), BitOR ($WS_EX_MDICHILD,$WS_EX_LAYERED), $iHwnd)
+    GUICtrlCreateLabel ($iText,2,0,$iW,$iH,-1,$GUI_WS_EX_PARENTDRAG )
+    GUICtrlSetColor (-1,$color)
+    GUICtrlSetFont (-1,10,400,0,"Arial", 4) ;teste auch mal 5 anstatt 4
+    GUISetBkColor(0x010000, $iGui)
+    _WinAPI_SetLayeredWindowAttributes($iGui, 0x010000, 255)
+EndFunc
